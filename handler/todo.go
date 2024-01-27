@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"net/http"
+	"encoding/json"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -18,6 +20,40 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 		svc: svc,
 	}
 }
+
+func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		var request model.CreateTODORequest
+		var response model.CreateTODOResponse
+
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&request); err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		if request.Subject == "" {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		result , err := t.svc.CreateTODO(r.Context(), request.Subject, request.Description)
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		response.TODO = *result
+
+		err = json.NewEncoder(w).Encode(&response)
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+    }
+}
+
 
 // Create handles the endpoint that creates the TODO.
 func (h *TODOHandler) Create(ctx context.Context, req *model.CreateTODORequest) (*model.CreateTODOResponse, error) {
