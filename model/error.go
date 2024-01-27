@@ -1,12 +1,7 @@
 package model
 
-type ErrNotFound struct{
-	Resource string
-}
+type ErrNotFound struct{}
 
 func (e ErrNotFound) Error() string {
-	if e.Resource == "" {
-		return "Not found"
-	}
-	return "Not found: " + e.Resource
+	return "Not found:"
 }
