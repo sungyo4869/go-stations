@@ -23,35 +23,62 @@ func NewTODOHandler(svc *service.TODOService) *TODOHandler {
 
 func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		var request model.CreateTODORequest
-		var response model.CreateTODOResponse
+		var req model.CreateTODORequest
+		var res model.CreateTODOResponse
 
 		decoder := json.NewDecoder(r.Body)
 
-		if err := decoder.Decode(&request); err != nil {
+		if err := decoder.Decode(&req); err != nil {
 			http.Error(w, "Bad Request", 400)
 			return
 		}
 
-		if request.Subject == "" {
+		if req.Subject == "" {
 			http.Error(w, "Bad Request", 400)
 			return
 		}
 
-		result , err := t.svc.CreateTODO(r.Context(), request.Subject, request.Description)
+		result , err := t.svc.CreateTODO(r.Context(), req.Subject, req.Description)
 		if err != nil {
 			http.Error(w, "Bad Request", 400)
 			return
 		}
 
-		response.TODO = *result
+		res.TODO = *result
 
-		err = json.NewEncoder(w).Encode(&response)
+		err = json.NewEncoder(w).Encode(&res)
 		if err != nil {
 			http.Error(w, "Bad Request", 400)
 			return
 		}
-    }
+    }else if r.Method == http.MethodPut {
+		var req model.UpdateTODORequest
+		var res model.UpdateTODOResponse
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&req); err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		if req.ID == 0 || req.Subject == "" {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		result, err := t.svc.UpdateTODO(r.Context(), req.ID, req.Subject, req.Description)
+		if err != nil{
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		res.TODO = *result
+		err = json.NewEncoder(w).Encode(&res)
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+	}
 }
 
 
