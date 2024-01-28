@@ -7,7 +7,7 @@ import (
 type (
 	// A TODO expresses ...
 	TODO struct{
-		ID          int64			`json:"id"`
+		ID          int64		`json:"id"`
 		Subject     string		`json:"subject"`
 		Description string		`json:"description"`
 		CreatedAt	time.Time	`json:"created_at"`
@@ -37,8 +37,8 @@ type (
 	// A UpdateTODORequest expresses ...
 	UpdateTODORequest struct{
 		ID          int64			`json:"id"`
-		Subject     string		`json:"subject"`
-		Description string		`json:"description"`
+		Subject     string			`json:"subject"`
+		Description string			`json:"description"`
 	}
 	// A UpdateTODOResponse expresses ...
 	UpdateTODOResponse struct{
@@ -46,7 +46,9 @@ type (
 	}
 
 	// A DeleteTODORequest expresses ...
-	DeleteTODORequest struct{}
+	DeleteTODORequest struct{
+		IDs []int64	`json:"ids"`
+	}
 	// A DeleteTODOResponse expresses ...
 	DeleteTODOResponse struct{}
 )
