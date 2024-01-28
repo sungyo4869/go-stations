@@ -2,8 +2,9 @@ package handler
 
 import (
 	"context"
-	"net/http"
 	"encoding/json"
+	"net/http"
+	"strconv"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -74,6 +75,55 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		res.TODO = *result
 		err = json.NewEncoder(w).Encode(&res)
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+	}else if r.Method == http.MethodGet {
+		var req model.ReadTODORequest
+		var res model.ReadTODOResponse
+		var err error
+		max_row := int64(5)
+
+		params := r.URL.Query()
+
+		// 特定のクエリパラメータの値を取得
+		pramStr := params.Get("prev_id")
+
+		if pramStr != "" {
+			req.PrevID, err = strconv.ParseInt(pramStr, 10, 64)
+			if err != nil {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+		}
+
+		pramStr = params.Get("size")
+
+		if pramStr != "" {
+			req.Size, err = strconv.ParseInt(pramStr, 10, 64)
+			if err != nil {
+				http.Error(w, "Bad Request", 400)
+				return
+			}
+		}else {
+			req.Size = max_row
+		}
+
+		todos, err := t.svc.ReadTODO(r.Context(), req.PrevID, req.Size)
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		res.TODOs = []model.TODO{}
+
+		for _, todo := range todos {
+			res.TODOs = append(res.TODOs, *todo)
+		}
+
+		err = json.NewEncoder(w).Encode(&res)
+
 		if err != nil {
 			http.Error(w, "Bad Request", 400)
 			return
