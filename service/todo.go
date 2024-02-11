@@ -143,7 +143,7 @@ func (s *TODOService) DeleteTODO(ctx context.Context, ids []int64) error {
 
 	placeholders := ""
 	if len(ids) > 1 {
-		placeholders = strings.Repeat(", ", len(ids)-1) + "?"
+		placeholders = strings.Repeat(", ?", len(ids)-1)
 	}
 	delete := fmt.Sprintf(deleteFmt, placeholders)
 

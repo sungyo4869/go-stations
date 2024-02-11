@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"errors"
 
 	"github.com/TechBowl-japan/go-stations/model"
 	"github.com/TechBowl-japan/go-stations/service"
@@ -123,6 +124,35 @@ func (t *TODOHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = json.NewEncoder(w).Encode(&res)
+
+		if err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+	}else if r.Method == http.MethodDelete{
+		var req model.DeleteTODORequest
+		var res model.DeleteTODOResponse
+
+		decoder := json.NewDecoder(r.Body)
+
+		if err := decoder.Decode(&req); err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		if len(req.IDs) == 0{
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+
+		result := t.svc.DeleteTODO(r.Context(), req.IDs)
+
+		if errors.Is(result, &model.ErrNotFound{}){
+			http.Error(w, "NotFound", 404)
+			return
+		}
+
+		err := json.NewEncoder(w).Encode(&res)
 
 		if err != nil {
 			http.Error(w, "Bad Request", 400)
